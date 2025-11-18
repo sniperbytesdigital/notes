@@ -1,0 +1,31 @@
+
+# Your existing code
+>>> IPlayer = IP()
+>>> IPlayer.show()
+>>> tcplayer = TCP()
+>>> tcplayer.show()
+>>> pkt = IPlayer/tcplayer
+>>> pkt.show()
+
+# Add Ethernet layer at the beginning
+>>> etherlayer = Ether()
+>>> etherlayer.show()
+
+# Create the complete packet with Ethernet
+>>> pkt = etherlayer/IP()/TCP()
+>>> pkt.show()
+
+# Set the IP addresses (your existing code)
+>>> pkt.src="192.168.31.1"
+>>> pkt.dst="192.168.31.202"
+>>> pkt.show()
+
+# IMPORTANT: Use sendp() instead of send() for Ethernet packets
+>>> sendp(pkt)
+
+# Add Raw layer with data
+>>> packet2 = Raw()
+>>> pkt = pkt/packet2
+>>> pkt.show()
+>>> pkt.load = "hello world"
+>>> sendp(pkt)
