@@ -1,0 +1,72 @@
+
+>>> IPlayer = IP()
+>>> IPlayer.version = 4
+>>> IPlayer.ihl = 5  (Usually 5 (20 bytes header) when no options)
+>>> IPlayer.tos = 0x0    (priority - 0x__ (hexadecimal value)
+Bits 0-2: Precedence
+Bit 3:    Delay (0=normal, 1=low)
+Bit 4:    Throughput (0=normal, 1=high)
+Bit 5:    Reliability (0=normal, 1=high)
+Bit 6-7:  Reserved)
+>>> IPlayer.len = 40  (The len field of IP header is 40 bytes)
+>>> IPlayer.id = 1 (id = Identification number used for fragment reassembly)
+>>> IPlayer.flags = 0  (Bit 0: Reserved (always 0)
+Bit 1: DF - Don't Fragment
+Bit 2: MF - More Fragments)
+
+>>> IPlayer.frag = 0   (frag = 0 - This means it's either:
+A complete packet (not fragmented)
+The first fragment of a fragmented packet)
+>>> IPlayer.ttl = 64 (# Different operating systems use different default TTLs:
+>>> IPlayer.ttl = 64    # Linux/Unix systems
+>>> IPlayer.ttl = 128   # Windows systems  
+>>> IPlayer.ttl = 255   # Cisco routers, Solaris
+>>> IPlayer.ttl = 60    # Some BSD systems)
+>>> IPlayer.proto = 0 (>>> IPlayer.proto = 0    # hopopt - Hop-by-Hop Option 
+>>> IPlayer.proto = 1    # icmp - Internet Control Message Protocol
+>>> IPlayer.proto = 2    # igmp - Internet Group Management Protocol
+>>> IPlayer.proto = 6    # tcp - Transmission Control Protocol
+>>> IPlayer.proto = 17   # udp - User Datagram Protocol
+>>> IPlayer.proto = 41   # ipv6 - IPv6 encapsulation
+>>> IPlayer.proto = 47   # gre - Generic Routing Encapsulation
+>>> IPlayer.proto = 50   # esp - Encapsulating Security Payload
+>>> IPlayer.proto = 51   # ah - Authentication Header
+>>> IPlayer.proto = 89   # ospf - Open Shortest Path First
+)
+>>> IPlayer.chksum = None (# Scapy will set it to something like:
+                          			 # chksum = 0x7A4C (example real checksum)
+                           # chksum = 0x3D91 (another real checksum))
+>>> IPlayer.src = "127.0.0.1"
+>>> IPlayer.dst = "127.0.0.1"
+>>> IPlayer.show()
+
+>>> tcplayer = TCP()
+>>> tcplayer.show()
+...     tcplayer.sport=12345,        # Source port (random ephemeral)
+...     tcplayer.dport=80,           # Destination port (HTTP)
+...     tcplayer.seq=1000, #Tracks the order of bytes transmitted in a TCP session 
+...     tcplayer.ack=5000,   # Acknowledgement number
+...     dataofs=5,  # Data offset (header length)
+...     reserved=0, # : Reserved for future use
+...     flags="S",          # TCP flags (S=SYN, A=ACK, R=RST, F=FIN, P=PSH, U=URG)
+...     window=8192,  #Bytes the receiver can accept
+...     chksum=None,        # Checksum (auto-calculated if None)
+...     urgptr=0,           # Urgent pointer
+...     
+... )
+
+>>> etherlayer = Ether()
+>>> etherlayer.dst = "ff:ff:ff:ff:ff:ff" 
+>>> etherlayer.src = "11:22:33:44:55:66"
+>>> etherlayer.type = 0x0800  # IPv4  (Common types:, # 0x0800 = IPv4, # 								0x0806 = ARP
+# 0x86DD = IPv6
+# 0x8100 = 802.1Q (VLAN))
+>>> etherlayer.show()
+
+>>> packet2 = Raw()
+>>> pkt = pkt/packet2
+>>> pkt.show()
+(sending packet)
+>>> pkt = etherlayer/IPlayer/tcplayer)
+>>> pkt = pkt/packet2
+>>> sendp(pkt)
