@@ -1,0 +1,5 @@
+#cd /usr/share/wordlist
+#sudo gunzip /usr/share/wordlists/rockyou.txt.gz
+#wifite
+#(ctrl + C - 1)
+# wifite -wpa --dict rockyou.txt --kill
