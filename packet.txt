@@ -1,0 +1,17 @@
+(master)(make general packet using ip, tcp and raw layer with kali linux)
+#scapy
+>>> IPlayer = IP()
+>>> IPlayer.show()
+>>> tcplayer = TCP()
+>>> tcplayer.show()
+>>> pkt = IPlayer/tcplayer
+>>> pkt.show()
+>>> pkt.src="192.168.31.1"           #pkt.src=”8.8.8.8”
+>>> pkt.dst="192.168.31.202"
+>>> pkt.show()
+>>> send(pkt)
+>>> packet2 = Raw()
+>>> pkt = pkt/packet2
+>>> pkt.show()
+>>> pkt.load = "hello world"
+>>> send(pkt)
