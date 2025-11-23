@@ -1,0 +1,16 @@
+(practical)(capture raw packets going from a wifi interface in windows)
+#!/usr/bin/python
+#install scapy-http
+import scapy.all as scapy
+from scapy.layers import http
+
+#iface:interface, store:dont store data in PC, prn:for each packet captured call func()
+#filter: can use udp, tcp etc
+def sniff(interface) :
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+
+def process_sniffed_packet(packet) :
+    if packet.haslayer(http.Raw) :   #http.TCP or UDP or HTTP, RAW -> ethernet layer
+        print(packet)
+
+sniff("Wi-Fi")
