@@ -1,0 +1,64 @@
+(set up onion server and make client server in python)
+(set up onion web server in kali)
+#sudo apt update
+#sudo apt install tor -y
+#sudo systemctl start tor
+#sudo systemctl enable tor
+#sudo nano /etc/tor/torrc
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 12345 127.0.0.1:12345
+#sudo systemctl restart tor
+sudo apt install apache2 -y
+sudo systemctl start apache2
+#sudo cat /var/lib/tor/hidden_service/hostname
+(server.py)
+import socket
+
+HOST = '127.0.0.1'  # localhost only
+PORT = 12345        # any free port
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    print(f"Server listening on {HOST}:{PORT}...")
+    conn, addr = s.accept()
+    with conn:
+        print(f"Connected by {addr}")
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+            print(f"Received: {data.decode()}")
+            conn.sendall(b"Echo: " + data)
+
+(client.py)
+#install pip install stem pysocks
+import socket
+import socks  # PySocks
+
+# Your .onion address and port
+ONION_ADDRESS = 'abcxyz1234567890.onion'
+PORT = 12345
+
+# Tor SOCKS proxy info (default Tor SOCKS port)
+SOCKS_PROXY_HOST = '127.0.0.1'
+SOCKS_PROXY_PORT = 9050
+
+# Create a socket through Tor SOCKS5 proxy
+s = socks.socksocket()
+s.set_proxy(proxy_type=socks.SOCKS5, addr=SOCKS_PROXY_HOST, port=SOCKS_PROXY_PORT)
+
+# Connect to onion address (Tor resolves it)
+print(f"Connecting to {ONION_ADDRESS}:{PORT} via Tor...")
+s.connect((ONION_ADDRESS, PORT))
+
+# Send and receive data
+s.sendall(b"Hello from client!")
+data = s.recv(1024)
+print("Received:", data.decode())
+
+s.close()
+
+(run on client tor network)
+# https://www.torproject.org/download/tor/
+#extract to c://Tor and tun tor.exe
