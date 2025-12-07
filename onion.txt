@@ -1,0 +1,16 @@
+(set up onion web server in kali)
+#sudo apt update
+#sudo apt install tor -y
+#sudo systemctl start tor
+#sudo systemctl enable tor
+#sudo nano /etc/tor/torrc
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 192.168.31.226:80
+#sudo systemctl restart tor
+#sudo cat /var/lib/tor/hidden_service/hostname
+
+(transfer dark web website from one host to other with same name)
+#sudo systemctl stop tor
+#sudo cp/var/lib/tor/hidden_service/private_key
+#sudo cp /var/lib/tor/hidden_service/hostname
+#sudo systemctl start tor
