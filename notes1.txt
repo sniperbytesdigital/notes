@@ -1,0 +1,5 @@
+(share files via onionshare using kali linux)
+(sudo apt update)
+(sudo apt install onionshare -y)
+(search onionshare- share via onionshare - start sharing - copy link and privatekey)
+(share with person - stop sharing)
