@@ -1,0 +1,7 @@
+(email spoofing using kali terminal)
+(sendemail -xu sniperbytesofficial@gmail.com -xp jsrmbefdlrfzsapl  -s smtp.gmail.com:587 -f "ducati@gmail.com" -t "surtimurti20@gmail.com" -u "check out car" -m "link : https://en.wikipedia.org/wiki/Lamborghini_Hurac%C3%A1n#/media/File:2017_Lamborghini_Huracan_LP610.jpg")
+(sendemail -xu sniperbytesofficial@gmail.com -xp "jsrmbefdlrfzsapl" -s smtp.gmail.com:587 -f "ducatiindia@gmail.com" -t "surtimurti20@gmail.com" -u "check out car" -m "link : https://en.wikipedia.org/wiki/Lamborghini_Hurac%C3%A1n#/media/File:2017_Lamborghini_Huracan_LP610.jpg" -o message-header="From: ducati india <officialducati@gmail.com>")
+
+
+
+ 
