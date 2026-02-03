@@ -1,0 +1,18 @@
+(disable user access control in windows)
+( whoami /all)
+(cmd - reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f)
+(Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System - and make enablelua 0)
+(code)
+#disable UAC
+import winreg
+k=winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System",0,winreg.KEY_SET_VALUE)
+winreg.SetValueEx(k,"EnableLUA",0,winreg.REG_DWORD,0)
+winreg.CloseKey(k)
+print("UAC disabled (EnableLUA=0). Reboot required.")
+
+#enable UAC
+import winreg
+k=winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System",0,winreg.KEY_SET_VALUE)
+winreg.SetValueEx(k,"EnableLUA",1,winreg.REG_DWORD,1)  # Changed 0→1
+winreg.CloseKey(k)
+print("UAC enabled (EnableLUA=1). Reboot required.")
