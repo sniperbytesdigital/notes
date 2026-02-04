@@ -1,0 +1,67 @@
+(create own access point using alpha)
+(dnsmasq.conf)
+# Set the wifi interface
+interface=wlan0
+
+# Use a DIFFERENT subnet for your hotspot!
+# Don't use 192.168.0.x because it conflicts with your internet network
+dhcp-range=192.168.4.2,192.168.4.50,255.255.255.0,8h
+
+# Your Pi's IP on the HOTSPOT network
+# This should be DIFFERENT from your internet IP
+dhcp-option=3,192.168.4.1
+
+# DNS server (your Pi)
+dhcp-option=6,192.168.4.1
+
+# REMOVE this line - it's breaking DNS!
+# address=/#/10.0.0.1
+
+# Optional: Forward DNS to Google
+server=8.8.8.8
+server=8.8.4.4
+(hostapd.conf)
+#Set wifi interface
+#interface=wlan1
+
+#Set network name
+#ssid=rahultesting
+
+#Set channel
+#channel=1
+
+#Set driver
+#driver=nl80211
+
+interface=wlan0
+driver=nl80211
+ssid=SNIPERBYTES.
+hw_mode=g
+channel=6
+wpa=2
+wpa_passphrase=mysecurepassword
+
+(code)
+#apt-get install hostapd
+#apt-get install dnsmasq
+# systemctl stop NetworkManager 
+# airmon-ng check kill 
+#ifconfig wlan0 192.168.4.1/24
+#ifconfig wlan0 192.168.4.1 netmask 255.255.255.0
+# route -n 
+#sudo route del default gw 192.168.0.1
+# route add default gw 192.168.4.1  
+#dnsmasq -C dnsmasq.conf
+#sudo netstat -tulnp | grep :53
+# sudo netstat -tulnp | grep ':67'
+# kill -9 38530  
+#hostapd hostapd.conf
+#systemctl start apache2
+#systemctl start rpcbind
+#killall dnsmasq
+#killall hostapd
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+
