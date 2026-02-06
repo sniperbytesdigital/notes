@@ -1,0 +1,155 @@
+(to do list using database file in android java)
+(activity.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/holo_blue_bright"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:ems="10"
+            android:hint="Add new item"
+            android:inputType="textPersonName" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="4" />
+</LinearLayout>
+(mainactivity.java)
+package com.example.fragments;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText item;
+    Button add;
+    ListView listView;
+    ArrayList<String> itemlist = new ArrayList<>();
+    ArrayAdapter<String> arrayAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        item = findViewById(R.id.editText);
+        add = findViewById(R.id.button);
+        listView = findViewById(R.id.list);
+
+        itemlist = FileHelper.readData(this);
+
+        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, itemlist);
+        listView.setAdapter(arrayAdapter);
+
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String itemName = item.getText().toString();
+                itemlist.add(itemName);
+                item.setText("");
+                FileHelper.writeData(itemlist, getApplicationContext());
+                arrayAdapter.notifyDataSetChanged();
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                // Show toast message for deletion
+                Toast.makeText(MainActivity.this, "Item deleted: " + itemlist.get(position), Toast.LENGTH_SHORT).show();
+
+                // Remove item directly without confirmation dialog
+                itemlist.remove(position);
+                arrayAdapter.notifyDataSetChanged();
+                FileHelper.writeData(itemlist, getApplicationContext());
+            }
+        });
+    }
+}
+(FileHelper.java)
+package com.example.fragments;
+
+import android.content.Context;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+public class FileHelper {
+
+    public static final String FILENAME = "listinfoa.dat";
+///data/data/[YOUR_PACKAGE_NAME]/files/listinfoa.dat
+    public static void writeData(ArrayList<String> item, Context context)
+    {
+        try {
+            FileOutputStream fos = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            ObjectOutputStream oas = new ObjectOutputStream(fos);
+            oas.writeObject(item);
+            oas.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<String> readData(Context context)
+    {
+        ArrayList<String> itemlist = null;
+
+        try {
+            FileInputStream fis = context.openFileInput(FILENAME);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            itemlist = (ArrayList<String>) ois.readObject();
+        } catch (FileNotFoundException e) {
+            itemlist = new ArrayList<>();
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return itemlist;
+    }
+}
