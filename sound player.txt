@@ -1,0 +1,306 @@
+(sound player in android java)
+(activitymain.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Simple Music Player"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="30dp"/>
+
+    <TextView
+        android:id="@+id/songTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No song playing"
+        android:textSize="18sp"
+        android:layout_marginBottom="30dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/playBtn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="▶"
+            android:textSize="24sp"
+            android:layout_margin="10dp"/>
+
+        <Button
+            android:id="@+id/pauseBtn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="⏸"
+            android:textSize="24sp"
+            android:layout_margin="10dp"/>
+
+        <Button
+            android:id="@+id/stopBtn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="⏹"
+            android:textSize="24sp"
+            android:layout_margin="10dp"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/loadBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Load Music"
+        android:layout_marginTop="30dp"/>
+
+</LinearLayout>
+(mainactivity.java)
+package com.example.soundplayer;
+
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity {
+
+    private Button playBtn, pauseBtn, stopBtn, loadBtn;
+    private TextView songTitle;
+    private MediaPlayer mediaPlayer;
+    private Uri currentAudioUri = null;
+    private static final int PICK_AUDIO_REQUEST = 1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        playBtn = findViewById(R.id.playBtn);
+        pauseBtn = findViewById(R.id.pauseBtn);
+        stopBtn = findViewById(R.id.stopBtn);
+        loadBtn = findViewById(R.id.loadBtn);
+        songTitle = findViewById(R.id.songTitle);
+
+        // Initially disable controls
+        playBtn.setEnabled(false);
+        pauseBtn.setEnabled(false);
+        stopBtn.setEnabled(false);
+
+        // Load button - opens file picker
+        loadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFilePicker();
+            }
+        });
+
+        // Play button
+        playBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+                    mediaPlayer.start();
+                    songTitle.setText("Playing: " + getFileName(currentAudioUri));
+                    Toast.makeText(MainActivity.this, "Playing", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Pause button
+        pauseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    songTitle.setText("Paused: " + getFileName(currentAudioUri));
+                    Toast.makeText(MainActivity.this, "Paused", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Stop button
+        stopBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.stop();
+                    songTitle.setText("Stopped: " + getFileName(currentAudioUri));
+                    playBtn.setEnabled(false);
+                    pauseBtn.setEnabled(false);
+                    stopBtn.setEnabled(false);
+                    loadBtn.setEnabled(true);
+                    Toast.makeText(MainActivity.this, "Stopped", Toast.LENGTH_SHORT).show();
+
+                    try {
+                        mediaPlayer.prepareAsync();
+                    } catch (IllegalStateException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void openFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);  // let user select file
+        intent.setType("audio/*");  //only audio files
+        intent.addCategory(Intent.CATEGORY_OPENABLE); //read file as stream
+
+        // Grant URI permission for the selected file
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); //temporary permission to read user
+
+        startActivityForResult(Intent.createChooser(intent, "Select Audio File"),
+                PICK_AUDIO_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_AUDIO_REQUEST && resultCode == RESULT_OK && data != null) {
+            currentAudioUri = data.getData();
+            if (currentAudioUri != null) {
+                // Take persistable URI permission for future use
+                try {
+                    getContentResolver().takePersistableUriPermission(
+                            currentAudioUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    );
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+
+                loadAudioFromUri(currentAudioUri);
+            }
+        }
+    }
+
+    private void loadAudioFromUri(Uri uri) {
+        try {
+            // Release any previous MediaPlayer
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            // Create MediaPlayer from URI
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(this, uri);
+            mediaPlayer.prepareAsync();
+
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    playBtn.setEnabled(true);
+                    pauseBtn.setEnabled(true);
+                    stopBtn.setEnabled(true);
+                    loadBtn.setEnabled(false);
+                    songTitle.setText("Ready: " + getFileName(uri));
+                    Toast.makeText(MainActivity.this, "Audio loaded successfully!",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    songTitle.setText("Finished: " + getFileName(uri));
+                    playBtn.setEnabled(false);
+                    pauseBtn.setEnabled(false);
+                    stopBtn.setEnabled(false);
+                    loadBtn.setEnabled(true);
+                }
+            });
+
+            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Toast.makeText(MainActivity.this, "Error playing audio",
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            });
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Error loading audio file", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private String getFileName(Uri uri) {
+        String fileName = "Unknown";
+        if (uri == null) return fileName;
+
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null) {
+            try {
+                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (cursor.moveToFirst()) {
+                    fileName = cursor.getString(nameIndex);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return fileName;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+}
+(androidmanifest.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- For Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Soundplayer">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+
+
