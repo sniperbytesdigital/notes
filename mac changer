@@ -1,0 +1,21 @@
+(change mac address using ifconfig/macchanger and python and ping from other computer)
+(kali - ifconfig)
+#ifconfig eth0 down
+#ifconfig eth0 hw ether 00:11:22:33:44:55
+#ifconfig eth0 up
+#ifconfig
+(windows)
+#cmd - arp -d  (delete all entries from arp table)
+#ping 192.168.31.98 (kali machine ping)
+#cmd - arp -a  (check mac address of kali machine)
+(machanger)
+# macchanger -s eth0  (show mac address)
+# macchanger -r eth0  (random mac)
+# macchanger -m 00:11:11:11:11:11 eth0  (set mac address
+#service NetworkManager restart
+(python)
+#!/usr/bin/env python
+import subprocess
+subprocess.call("ifconfig eth0 down", shell=True)
+subprocess.call("ifconfig eth0 hw ether 00:11:22:33:44:55", shell=True)
+subprocess.call("ifconfig eth0 up", shell=True)
