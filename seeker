@@ -1,0 +1,17 @@
+(trace location of phone by generating link)
+(terminal-1 : kali)
+#(download seeker from github)
+#cd seeker
+#./seeker.py 
+#1 : google drive and url 123
+
+(terminal-2 : kali)
+(ngrok configuration)
+#(register to ngrok and take token)
+#wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
+#unzip ngrok-stable-linux-amd64.zip
+#sudo apt install unzip
+#sudo mv ngrok /usr/local/bin/
+#ngrok version
+#ngrok config add-authtoken 2wx0W5KwvVOIi4lQWNG9hMXq22x_7hZDVT95nSu8nxXEFLGLj
+#ngrok http 8080
