@@ -1,0 +1,10 @@
+from dotenv import load_dotenv, find_dotenv
+print(load_dotenv(find_dotenv(),override=True))
+
+import google.generativeai as genai
+import os
+
+genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
+response = model.generate_content("whats your name")
+print(response.text)
