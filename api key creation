@@ -1,0 +1,12 @@
+from dotenv import load_dotenv, find_dotenv # pip3 install dotenv
+print(load_dotenv(find_dotenv(),override=True))
+
+import google.generativeai as genai    #pip install google-generativeai
+import os
+genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
+for model in genai.list_models():
+    print(model.name)
+
+model_info = genai.get_model('models/gemini-2.0-flash-thinking-exp')
+print(model_info)
+
