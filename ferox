@@ -1,0 +1,3 @@
+(collect information about website)
+(apt-get install feroxbuster -y)
+(feroxbuster -u https://nairscomputereducation.com)
