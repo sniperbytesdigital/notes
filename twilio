@@ -1,0 +1,15 @@
+from twilio.rest import Client
+
+account_sid = "AC3fffDFDF8d89sfsfsfsfc0e67f8184e3"
+auth_token = "7a1fa34c164SDSDSDSSaeee2fc208"
+client = Client(account_sid, auth_token)
+
+message = client.messages \
+                .create(
+                     body="SNIPER BYTES - control the soul of circuits",
+                     from_='+17445452584',
+                     to='+917028434334'
+                 )
+
+print(message.status)
+
