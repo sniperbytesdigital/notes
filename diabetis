@@ -1,0 +1,8 @@
+(write a program to just load a diabetis dataset from scikit-learn)
+from sklearn.datasets import load_diabetes #scikit-learn
+
+X, y = load_diabetes(return_X_y=True, as_frame=True)
+X = X[["age", "bmi"]]
+print(load_diabetes()["DESCR"])
+print(X.head())
+print(y.head())
