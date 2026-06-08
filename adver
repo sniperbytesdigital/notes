@@ -1,0 +1,25 @@
+(deploy a linear regression model for advertisements dataset)
+import pandas as pd
+
+df = pd.read_csv("https://raw.githubusercontent.com/sniperbytesdigital/files/refs/heads/main/Advertising.csv")
+df = df.drop(df.columns[0], axis=1)
+
+X = df.drop('sales',axis=1)
+y = df['sales']
+#
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
+#
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train,y_train)
+test_predictions = model.predict(X_test)
+# print(X_test)
+# print(test_predictions)
+# print(y_test)
+#
+from joblib import dump, load
+dump(model, 'sales_model.joblib')
+loaded_model = load('sales_model.joblib')
+campaign = [[149,22,12]]
+print(loaded_model.predict(campaign))
