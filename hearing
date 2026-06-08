@@ -1,0 +1,31 @@
+#(apply logistics regression to a data which predicts hearing based on age and physical strength)
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+import numpy as np
+
+df = pd.read_csv('https://raw.githubusercontent.com/sniperbytesdigital/files/refs/heads/main/hearing_test.csv')
+print(df)
+X = df.drop('test_result',axis=1)
+y = df['test_result']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=101)
+
+scaler = StandardScaler()
+scaled_X_train = scaler.fit_transform(X_train)
+scaled_X_test = scaler.transform(X_test)
+
+log_model = LogisticRegression()
+log_model.fit(scaled_X_train,y_train)
+#
+new_data = np.array([[50, 12]])
+scaled_new_data = scaler.transform(new_data)
+prediction = log_model.predict(scaled_new_data)
+print(prediction)
+
+y_pred = log_model.predict(scaled_X_test)
+print(accuracy_score(y_test,y_pred))
+print(confusion_matrix(y_test,y_pred))
+print(classification_report(y_test,y_pred))
