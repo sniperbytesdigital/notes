@@ -1,0 +1,80 @@
+#(master)(create a location tracer for windows machine and infect client)
+import requests, shutil, os
+from geopy.geocoders import Nominatim
+
+# Fetch public IP address
+def get_public_ip_address():
+    try:
+        response = requests.get("https://api.ipify.org?format=json")
+        data = response.json()
+        print(data)
+        return data["ip"]
+    except requests.RequestException as e:
+        print(f"Error getting public IP: {e}")
+        return None
+
+
+# Get geolocation info from IP address using ip-api
+def get_geolocation_from_ip(ip):  # ip=103.225.135.23'
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
+        print("------",data)
+        if data["status"] == "success":
+            return {
+                "ip": ip,
+                "lat": data["lat"],
+                "lon": data["lon"],
+                "city": data["city"],
+                "region": data["regionName"],
+                "country": data["country"],
+                "isp": data["isp"]
+            }
+        else:
+            print(f"IP lookup failed: {data.get('message')}")
+            return None
+
+    except requests.RequestException as e:
+        print(f"Error with IP geolocation request: {e}")
+        return None
+
+
+# Use geopy to get a human-readable address from coordinates
+def reverse_geocode(lat, lon):
+    try:
+        locator = Nominatim(user_agent="geo_locator")
+        location = locator.reverse((lat, lon), exactly_one=True)
+        return location.address if location else None
+    except Exception as e:
+        print(f"Reverse geocoding error: {e}")
+        return None
+
+
+# Main
+if __name__ == "__main__":
+    ip = get_public_ip_address()
+    print(f"Public IP: {ip}")
+
+    if ip:
+        geo_data = get_geolocation_from_ip(ip)
+
+        if geo_data:
+            print(f"\n[+] Geolocation info from IP:")
+            print(f"  IP: {geo_data['ip']}")
+            print(f"  Country: {geo_data['country']}")
+            print(f"  Region: {geo_data['region']}")
+            print(f"  City: {geo_data['city']}")
+            print(f"  ISP: {geo_data['isp']}")
+            print(f"  Latitude: {geo_data['lat']}")
+            print(f"  Longitude: {geo_data['lon']}")
+
+            # Use geopy to get address from lat/lon
+            address = reverse_geocode(geo_data["lat"], geo_data["lon"])
+            if address:
+                print(f"\n[+] Full Address (via geopy):\n  {address}")
+            else:
+                print("Could not get full address from coordinates.")
+        else:
+            print("Could not get geolocation from IP.")
+    else:
+        print("Could not get public IP.")
