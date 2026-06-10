@@ -1,0 +1,13 @@
+(extract and install a package in android)
+(enable developer options and usb debugging on android phone)
+(download android platform tools and extract tools on desktop)
+(cmd - adb shell)
+(adb install app.apk)
+(adb shell)
+(pm list packages)
+(adb shell pm list packages)
+(adb shell pm list packages -f)
+(adb shell pm list packages |findstr space)
+(adb shell pm path com.example.anew)
+(adb pull /system_ext/priv-app/ContactsProvider/ContactsProvider.apk)
+
