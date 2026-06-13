@@ -1,0 +1,8 @@
+(configure a bridge in many ways)
+(TOR bridges : a bridge is a node not identified by ISP as onion server)
+(TOR browser - connect to TOR network)
+(check.torproject.org and check ip address)
+(https://bridges.torproject.org/ - get bridges)
+(copy - bridges and TOR-settings-connection-add bridge manually)
+(email : bridges@torproject.org - get bridges)
+(settings -connection -request bridge)
