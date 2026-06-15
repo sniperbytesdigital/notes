@@ -1,0 +1,84 @@
+(analyze all osi layer packets)
+#!/usr/bin/env python
+# 2054 : ARP and 2048:ipv4
+import socket, os, sys, struct, binascii
+
+while True : 
+    sniffer_socket = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
+    data_recv = sniffer_socket.recv(2048);
+    eth_hdr = struct.unpack('6s6sH', data_recv[:14])
+    dest_mac = binascii.hexlify(eth_hdr[0])
+    src_mac = binascii.hexlify(eth_hdr[1])
+    proto = socket.ntohs(eth_hdr[2])
+    #print("destination : ","{}:{}:{}:{}:{}:{}".format(dest_mac[0:2],dest_mac[2:4], dest_mac[4:6], dest_mac[6:8], dest_mac[8:10], dest_mac[10:12]))
+    #print("source : ","{}:{}:{}:{}:{}:{}".format(src_mac[0:2],src_mac[2:4], src_mac[4:6], src_mac[6:8], src_mac[8:10], src_mac[10:12]))
+    #print(proto)
+    #print("-------------------------------------------------------------------------")
+    
+    data = data_recv[14:]
+    ip_hdr = struct.unpack('!6H4s4s', data[:20])
+    ver = ip_hdr[0] >> 12
+    ihl = (ip_hdr[0] >> 8) & 0x0f   #if ihl=5 then 5 × 4 bytes = 20 bytes
+    tos = ip_hdr[0] & 0x00ff
+    tot_len = ip_hdr[1]    # total len of packet in bytes
+    ip_id = ip_hdr[2]   #unique id for packet
+    flags = ip_hdr[3] >> 13   #decides fragmentation of packet
+    frag_offset = ip_hdr[3] & 0x1fff
+    ip_ttl = ip_hdr[4] >> 8
+    ip_proto = ip_hdr[4] & 0x00ff   #protocol used in data section : 6:tcp and 17:udp
+    checksum = ip_hdr[5]
+    src_address = socket.inet_ntoa(ip_hdr[6])
+    dst_address = socket.inet_ntoa(ip_hdr[7])
+    data = data_recv[20:]
+
+    #print("ip header : ", ip_hdr)
+    #print("ip version : ", ver)
+    #print("header length : ", ihl)
+    #print("type of service : ", tos)
+    #print("total length of packet", tot_len)
+    #print("unique ip identifier : ", ip_id)
+    #print("flags : ", flags)
+    #print("fragmenttion offset : ", frag_offset)
+    #print("time to live : ", ip_ttl)
+    #print("protocol used in data section : TCP or udp : ", ip_proto)
+    #print("checksum : ", checksum)
+    #print("source : ", src_address)
+    #print("destination : ",dst_address)
+    #print("data - ", data)
+    
+    print("-------------------------------------------------------------------------")
+    
+     
+    
+    tcp_hdr = struct.unpack('!2H2I4H', data[:20])
+    src_port = tcp_hdr[0]           # source port 
+    dst_port = tcp_hdr[1]           # destination port
+    seq_num = tcp_hdr[2]            # given to packets send
+    ack_num = tcp_hdr[3]            #packets recieved
+    data_offset = tcp_hdr[4]        #length of tcp header
+    window = tcp_hdr[5]             #data receiver can get without acknowledgement
+    checksum = tcp_hdr[6]           #to check and verify that data has reached 
+    urg_ptr = tcp_hdr[7]            #till what bytes the urgent data exists
+    
+    #print("source port : ", src_port)
+    #print("destination port : ", dst_port)
+    #print("sequence number : ", seq_num)
+    #print("acknowledgement no : ", ack_num)
+    #print("data offset : ", data_offset)
+    #print("window : ", window)
+    #print("checksum : ", checksum)
+    #print("urgent pointer : ", urg_ptr)
+    
+    print("----------------------------------------------------------------------------")
+
+    udp_hdr = struct.unpack('!4H', data[:8])
+    src_port = udp_hdr[0]
+    des_port = udp_hdr[1]
+    length = udp_hdr[2]
+    checksum = udp_hdr[3]
+    data = data[9:]
+    print("source port : ", src_port)
+    print("des_port : ", des_port)
+    print("length : ", length)
+    print("checksum : ", checksum)
+    print("data : ", data)
