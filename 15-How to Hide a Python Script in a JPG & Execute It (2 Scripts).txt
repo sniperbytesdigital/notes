@@ -1,0 +1,24 @@
+(hide python script in image)
+(script.py)
+#!STARTSCRIPT
+print("This is hidden script.")
+(windows cmd)
+copy /b image.jpg + script.py image_with_script.jpg
+(index.py)
+# Open the combined file
+with open("image_with_script.jpg", "rb") as f:
+    data = f.read()
+
+# Look for the marker that starts the Python script
+marker = b"#!STARTSCRIPT"
+start = data.find(marker)
+
+if start != -1:
+    script = data[start:].decode("utf-8", errors="ignore")
+    print("Extracted Script:")
+    print(script)
+
+    print("\n--- Executing Script ---")
+    exec(script)
+else:
+    print("No embedded script found.")
