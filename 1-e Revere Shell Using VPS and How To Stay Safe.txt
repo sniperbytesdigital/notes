@@ -1,0 +1,40 @@
+(server)
+#!/usr/bin/env python
+import socket
+
+def server() :
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  s.bind(("72.60.201.21", 8080))
+  s.listen(1)
+  conn, addr = s.accept()
+  while True:
+      cmd = input("enter the command : ")
+      conn.send(cmd.encode('utf-8'))
+
+      data = conn.recv(8192).decode('utf-8')  # <-- response from server
+      print("Server says:", data)
+
+server()
+
+
+(client)
+import socket, time, ctypes, os, tkinter.messagebox
+def commands() :
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(("72.60.201.21", 8080))
+
+    while True:
+        command = s.recv(1024).decode('utf-8')  #command="hostname"
+        print(command)
+        if command == "lock":
+            ctypes.windll.user32.LockWorkStation()
+            s.send("lock done".encode('utf-8'))
+        elif command == "shutdown":
+            os.system("shutdown /s /f /t 100")
+            s.send("shutdown done".encode('utf-8'))
+        elif command == "hostname":
+            s.send(socket.gethostname().encode('utf-8'))
+        elif command == "ipaddr":
+            s.send(socket.gethostbyname(socket.gethostname()).encode("utf-8"))
+
+commands()
