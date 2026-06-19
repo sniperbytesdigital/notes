@@ -1,0 +1,14 @@
+(installation of wsl in windows)
+#(enable windows subsystem for linux and virtual machine platform - reboot)
+#(windows store - ubuntu22)
+#wsl --install (install linux shell in windows)
+#wsl --help
+(wsl.exe --list --online)  (see all distros)
+(wsl.exe --install -d Ubuntu-26.04)  (install)
+#wsl -l -v   (list all ubuntus)
+#wsl --set-version Ubuntu-22.04 2  (change ubuntu version)
+#wsl -u root  (root user)
+# hostnamectl
+# apt install python3-pip -y
+#wsl --shutdown
+#(install windows terminal from store)
