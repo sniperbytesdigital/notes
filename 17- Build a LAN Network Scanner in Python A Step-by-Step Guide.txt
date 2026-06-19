@@ -1,0 +1,26 @@
+(network scanner in python)
+#!/usr/bin/env python
+import platform
+from getmac import get_mac_address
+import subprocess
+import platform
+import re
+
+net = input("Enter the Network Address: ")#net=192.168.31.0/24
+net1 = net.split('.')
+
+print(net1)
+a = '.'
+net2 = net1[0] + a + net1[1] + a + net1[2] + a
+print(net2) #net2=192.168.31.
+
+st1 = int(input("Enter the Starting Number: "))   # st1=31  en1=61
+en1 = int(input("Enter the Last Number: "))
+en1 = en1 + 1
+oper = platform.system()
+
+for ip in range(st1, en1):  #st1=30   en1=61    net2=192.168.31.  ip=33
+    addr = net2 + str(ip)    # addr=192.168.31.32
+    ip_address = addr  # Replace with the target IP
+    mac_of_target = get_mac_address(ip=ip_address)
+    print(f"MAC Address of {ip_address}: {mac_of_target}")
