@@ -1,0 +1,7 @@
+(ble - bluetooth low energy device hacking)
+(settings - bluetooth hci snoop log enabled)
+(switch on bluetooth)
+(adb.exe bugreport report.zip)
+(\FS\proc) (all process details)
+(search hci - FS\data\misc\bluetooth\logs)
+(open C:\Users\nairr\OneDrive\Desktop\bug\FS\data\misc\bluetooth\logs - wireshark) - (ignore host and controller and search for htc-oneplus UUID etc)
