@@ -1,0 +1,5 @@
+(use jdax to reverse engineer apk files)
+(create an apk with 2 textviews - build and run or generate singned apk)
+(apt-get install jadx -y)
+(jadx -d appdebug /kalishare/app-debug.apk)
+(cd /usr/share/jadx/bin/appdebug)
