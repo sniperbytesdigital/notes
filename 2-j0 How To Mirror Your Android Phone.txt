@@ -1,0 +1,4 @@
+(scrcpy - screen mirror in windows)
+(connect android via usb debuggin)
+(download from github - https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md)
+(extract and run scrcpy.exe)
