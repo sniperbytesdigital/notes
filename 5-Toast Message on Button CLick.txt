@@ -1,0 +1,19 @@
+(display a toast on click of button)
+(activity.xml)
+ <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="305dp"
+        android:onClick="display"
+        android:text="CLICK"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+(mainactivity.java)
+
+    public void display(View view)
+    {
+        Toast.makeText(MainActivity.this, "clicked on button", Toast.LENGTH_LONG).show();
+    }
+(add display on onclick)
