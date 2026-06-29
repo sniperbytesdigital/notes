@@ -1,0 +1,58 @@
+(master)(android activity lifecycle)
+(mainactivity.java : logcat)
+public class MainActivity extends AppCompatActivity
+{
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        System.out.println("on create");
+    }
+    protected void onStart()
+    {
+        super.onStart();
+        Toast.makeText(
+                MainActivity.this,
+                "onstart",
+                Toast.LENGTH_LONG).show();
+        System.out.println("onstart");
+    }
+    protected void onResume()
+    {
+        super.onResume();
+        Toast.makeText(
+                MainActivity.this,
+                "onresume",
+                Toast.LENGTH_LONG).show();
+        System.out.println("onresume");
+    }
+    protected void onPause()
+    {
+        super.onPause();
+        Toast.makeText(
+                MainActivity.this,
+                "onpause",
+                Toast.LENGTH_LONG).show();
+        System.out.println("onpause");
+    }
+
+    protected void onStop()
+    {
+        super.onStop();
+        Toast.makeText(
+                MainActivity.this,
+                "onstop",
+                Toast.LENGTH_LONG).show();
+        System.out.println("onstop");
+    }
+    protected void onDestroy() {
+        super.onDestroy();
+        Toast.makeText(
+                MainActivity.this,
+                "ondestroy",
+                Toast.LENGTH_LONG).show();
+        System.out.println("ondestroy");
+    }
+
+}
+
+
+
