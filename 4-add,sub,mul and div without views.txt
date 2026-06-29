@@ -1,0 +1,57 @@
+(calculate addition, subtraction, multiplication and division)
+(mainactivity.java)
+package com.example.anew;
+
+import android.os.Bundle;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity
+{
+    int num1, num2, result;
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        num1 = 100;
+        num2 = 50;
+        add();
+        sub();
+        mul();
+        div();
+    }
+    void add()
+    {
+        result = num1 + num2;
+        Toast.makeText(
+                MainActivity.this,
+                "Addition" + result,
+                Toast.LENGTH_LONG).show();
+    }
+    void mul()
+    {
+        result = num1 * num2;
+        Toast.makeText(
+                MainActivity.this,
+                "Multiplication" + result,
+                Toast.LENGTH_LONG).show();
+    }
+    void sub()
+    {
+        result = num1 - num2;
+        Toast.makeText(
+                MainActivity.this,
+                "Subtraction" + result,
+                Toast.LENGTH_LONG).show();
+    }
+    void div()
+    {
+        result = num1 / num2;
+        Toast.makeText(
+                MainActivity.this,
+                "Divition" + result,
+                Toast.LENGTH_LONG).show();
+    }
+
+}
+
