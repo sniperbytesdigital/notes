@@ -1,0 +1,220 @@
+(access contacts using type-c charging port)
+(activity.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/abc"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tvCharge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CHARGE YOUR BATTERY......"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:fontFamily="sans-serif-medium"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+(androidmanifest)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:allowBackup="true"
+        android:usesCleartextTraffic="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".MyCustomService"/>
+        <!-- Receiver that listens for power connection -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
+(mainactivity.java)
+package com.example.myapplication;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+public class MainActivity extends AppCompatActivity {
+    private static final int PERMISSION_REQUEST_READ_CONTACTS = 100;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        IntentFilter intentFilter = new IntentFilter("android.intent.action.ACTION_POWER_CONNECTED");
+        BootReceiver br = new BootReceiver();
+        registerReceiver(br, intentFilter);
+
+        // Check if the permission is already granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED) {
+            // Permission is already available, proceed to read contacts
+            Intent serviceIntent = new Intent(this, MyCustomService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent); // Or startForegroundService() for Android 8.0+
+            }
+        } else {
+            // Permission is not granted, request it from the user
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSION_REQUEST_READ_CONTACTS);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_READ_CONTACTS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, read contacts
+                Intent serviceIntent = new Intent(this, MyCustomService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent); // Or startForegroundService() for Android 8.0+
+                }
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+}
+(mycustomservice.java)
+package com.example.myapplication;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+import android.widget.Toast;
+
+public class MyCustomService extends Service {
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Define the columns you want to retrieve
+        String[] projection = {
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.HAS_PHONE_NUMBER
+        };
+
+        // Perform the query on the Contacts Provider
+        Cursor cursor = getContentResolver().query(
+                ContactsContract.Contacts.CONTENT_URI,
+                projection,
+                null,
+                null,
+                ContactsContract.Contacts.DISPLAY_NAME + " ASC" // Sort order
+        );
+
+        if (cursor != null && cursor.getCount() > 0) {
+            StringBuilder contactsList = new StringBuilder();
+            int nameColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            int idColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+
+            while (cursor.moveToNext()) {
+                String contactName = cursor.getString(nameColumnIndex);
+                String contactId = cursor.getString(idColumnIndex);
+                contactsList.append("Name: ").append(contactName).append(", ID: ").append(contactId).append("\n");
+            }
+            cursor.close();
+
+            // Display the list of contacts (for example, in a Toast)
+            Toast.makeText(this, contactsList.toString(), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "No contacts found", Toast.LENGTH_SHORT).show();
+        }
+
+        return START_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+}
+
+(bootreceiver.java)
+package com.example.myapplication;
+
+import static androidx.core.content.ContextCompat.startForegroundService;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.widget.Toast;
+
+public class BootReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (Intent.ACTION_POWER_CONNECTED.equals(intent.getAction())) {
+            // Use the 'context' parameter, not 'this'
+            Intent serviceIntent = new Intent(context, MyCustomService.class);
+
+            // For Android 8+ use startForegroundService
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent);
+            } else {
+                context.startService(serviceIntent);
+            }
+
+        }
+    }
+}
