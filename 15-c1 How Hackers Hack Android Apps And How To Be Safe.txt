@@ -1,0 +1,43 @@
+(bypass login screen and hacking an app using activities and export)
+(create app with multiple activities)
+(adb shell pm list packages)
+(adb shell pm list packages -f)
+(adb shell pm list packages |findstr space)
+(adb shell pm path com.example.anew)
+(adb pull /system_ext/priv-app/ContactsProvider/ContactsProvider.apk)
+(apktool d app.apk)
+(find all exported activities in manifest)-(implicit and explicit)
+(adb shell)
+(am start-activity -n com.example.myapplication/.MainActivity2)(launch)
+(launch from code)
+package com.example.extra;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.Bundle;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+        Intent in = new Intent();
+        in.setComponent(new ComponentName("com.example.myapplication", "com.example.myapplication.MainActivity2"));
+        startActivity(in);
+    }
+
+}
+
+
