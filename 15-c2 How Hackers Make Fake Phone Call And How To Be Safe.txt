@@ -1,0 +1,165 @@
+(make a fake phone call using java android)
+(activity.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+(mainactivity.java)
+package com.example.myapplication;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final int REQUEST_CALL = 1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Check permission – if not granted, ask; otherwise start service
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+        } else {
+            startService();
+        }
+    }
+
+    private void startService() {
+        Intent serviceIntent = new Intent(this, MyCustomService.class);
+        startForegroundService(serviceIntent);
+        finish(); // close activity (optional)
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CALL && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        {
+            startService();
+        }
+    }
+}
+(androidmanifest)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <application
+        android:allowBackup="true"
+        android:usesCleartextTraffic="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".MyCustomService"/>
+
+    </application>
+
+</manifest>
+(MyCustomService.java)
+package com.example.myapplication;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+
+import androidx.core.app.NotificationCompat;
+
+public class MyCustomService extends Service {
+
+    private static final String PHONE_NUMBER = "+919309960489"; // change to your number
+    private static final int NOTIF_ID = 1;
+    private static final String CHANNEL_ID = "call_channel";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        createNotificationChannel();
+        // Start foreground (required for Android 8+)
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Call Service")
+                .setContentText("Calling in 5 seconds...")
+                .setSmallIcon(android.R.drawable.ic_menu_call)
+                .build();
+        startForeground(NOTIF_ID, notification);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Delay 5 seconds, then call
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            makeCall();
+            stopSelf(); // stop service after call inbuilt service class
+        }, 5000); // 5000 ms = 5 seconds
+
+        return START_STICKY;
+    }
+
+    private void makeCall() {
+        Intent callIntent = new Intent(Intent.ACTION_CALL);
+        callIntent.setData(Uri.parse("tel:" + PHONE_NUMBER));
+        callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // required for Service
+        startActivity(callIntent);
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Call Service Channel",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+}
