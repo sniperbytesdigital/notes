@@ -1,0 +1,160 @@
+(create a deep link to trigger an android app from webserver)
+(androidmanifest)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".DeepLink"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="holiday" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".MyCustomService" />
+        <!-- Receiver that listens for power connection -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".MainActivity2"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+
+</manifest>
+(mainactivity.java)
+package com.example.myapplication;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_main);
+//        IntentFilter intentFilter = new IntentFilter("android.intent.action.ACTION_POWER_CONNECTED");
+//        BootReceiver br = new BootReceiver();
+//        registerReceiver(br, intentFilter);
+        // Check if the permission is already granted
+    }
+}
+(DeepLink.java)
+package com.example.myapplication; // Replace with your actual package name
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class DeepLink extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_deep_link); // Create a simple XML layout for this
+
+        // Get the link that opened the app
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+
+        // Show a message confirming it worked!
+        if (data != null) {
+            Toast.makeText(this, "DeepLink Opened! URL: " + data.toString(), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "DeepLink Opened without data!", Toast.LENGTH_SHORT).show();
+        }
+    }
+}
+(activity_deep-link.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DeepLink">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="175dp"
+        android:text="success"
+        android:textSize="50sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+(vps-index.html)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deep Link Demo</title>
+</head>
+<body>
+    <h1>Welcome to My Server!</h1>
+    <p>Click the link below to open the Android app:</p>
+    
+    <!-- THE MAGIC DEEP LINK -->
+    <a href="holiday://open?message=HelloFromWeb">🚀 Open My Android App</a>
+
+    <br><br>
+    <p><i>If the app doesn't open, make sure it's installed on your phone.</i></p>
+</body>
+</html>
+
+
+
+
+
