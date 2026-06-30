@@ -1,0 +1,186 @@
+(make a weather app using android java)
+(activitymain.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Simple Weather App"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
+
+    <EditText
+        android:id="@+id/cityEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter city name"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/getWeatherBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Weather"
+        android:padding="12dp"/>
+
+    <TextView
+        android:id="@+id/weatherResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:layout_marginTop="32dp"
+        android:text="Weather will appear here"/>
+
+</LinearLayout>
+(mainactivity.java)
+package com.example.soundplayer;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText cityEditText;
+    Button getWeatherBtn;
+    TextView weatherResult;
+
+    // Free API key from OpenWeatherMap (sign up free at openweathermap.org)
+    String apiKey = "78aac9fca2b0453a955ea545ad4857ed"; // Replace with your actual API key
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        cityEditText = findViewById(R.id.cityEditText);
+        getWeatherBtn = findViewById(R.id.getWeatherBtn);
+        weatherResult = findViewById(R.id.weatherResult);
+
+        getWeatherBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String city = cityEditText.getText().toString().trim();
+                if (!city.isEmpty()) {
+                    fetchWeather(city);
+                } else {
+                    Toast.makeText(MainActivity.this, "Please enter a city name", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void fetchWeather(final String city) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // API URL
+                    String urlString = "https://api.openweathermap.org/data/2.5/weather?q="
+                            + city + "&appid=" + apiKey + "&units=metric";
+                    URL url = new URL(urlString);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.connect();
+
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode == 200) {
+                        BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(connection.getInputStream()));
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        reader.close();
+
+                        // Parse JSON
+                        JSONObject jsonObject = new JSONObject(response.toString());
+                        JSONObject main = jsonObject.getJSONObject("main");
+                        double temp = main.getDouble("temp");
+                        int humidity = main.getInt("humidity");
+                        String weather = jsonObject.getJSONArray("weather")
+                                .getJSONObject(0).getString("main");
+                        String description = jsonObject.getJSONArray("weather")
+                                .getJSONObject(0).getString("description");
+                        String cityName = jsonObject.getString("name");
+
+                        // Update UI
+                        final String result = "City: " + cityName + "\n" +
+                                "Temperature: " + temp + "°C\n" +
+                                "Weather: " + weather + "\n" +
+                                "Description: " + description + "\n" +
+                                "Humidity: " + humidity + "%";
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                weatherResult.setText(result);
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                weatherResult.setText("City not found. Please try again.");
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            weatherResult.setText("Error fetching weather data.\nCheck your internet connection.");
+                        }
+                    });
+                }
+            }
+        });
+        thread.start();
+    }
+}
+(androidmanifest.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Soundplayer">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
