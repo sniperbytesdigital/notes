@@ -1,0 +1,82 @@
+(flash light app using android java)
+(activity_main.xml)
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@android:color/black">
+
+    <Button
+        android:id="@+id/btnFlashlight"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:text="ON"
+        android:textSize="30sp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"/>
+
+</LinearLayout>
+(mainactivity.java)
+package com.example.qrscanner;
+
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    private Button btnFlashlight;
+    private CameraManager cameraManager;
+    private String cameraId;
+    private boolean isFlashOn = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        btnFlashlight = findViewById(R.id.btnFlashlight);
+        cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+
+        try {
+            cameraId = cameraManager.getCameraIdList()[0];
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
+        btnFlashlight.setOnClickListener(v -> {
+            if (isFlashOn) {
+                turnOffFlash();
+            } else {
+                turnOnFlash();
+            }
+        });
+    }
+
+    private void turnOnFlash() {
+        try {
+            cameraManager.setTorchMode(cameraId, true);
+            isFlashOn = true;
+            btnFlashlight.setText("OFF");
+            btnFlashlight.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark));
+        } catch (CameraAccessException e) {
+            Toast.makeText(this, "Could not access camera", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void turnOffFlash() {
+        try {
+            cameraManager.setTorchMode(cameraId, false);
+            isFlashOn = false;
+            btnFlashlight.setText("ON");
+            btnFlashlight.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        } catch (CameraAccessException e) {
+            Toast.makeText(this, "Could not access camera", Toast.LENGTH_SHORT).show();
+        }
+    }
+}
